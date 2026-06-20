@@ -6,7 +6,21 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" },maxHttpBufferSize:1e8  });
+
+// Use FRONTEND_URL from environment variables for CORS, fallback to wildcard
+const corsOrigin = process.env.FRONTEND_URL || "*";
+const io = new Server(server, { 
+  cors: { 
+    origin: corsOrigin,
+    methods: ["GET", "POST"]
+  }, 
+  maxHttpBufferSize: 1e8 
+});
+
+// Health check endpoint for deployment platforms (Render, Railway, etc.)
+app.get("/", (req, res) => {
+  res.status(200).send("Kanban WebSocket server is running.");
+});
 
 let tasks = [
   { id: "1", title: "Setup Project", columnId: "To Do", priority: "High", category: "Feature", attachment: null },
